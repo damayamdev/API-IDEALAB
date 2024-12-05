@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const vehicleRoutes = require('./interfaces/routes/vehicleRoutes');
+const authRoutes = require('./interfaces/routes/authRoutes');
 const { initDatabase } = require('./infrastructure/database/mysql');
 const logger = require('./config/logger');
 require('dotenv').config();
@@ -18,6 +19,7 @@ const swaggerDocument = require('../swagger.json');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 
 // Error handling middleware
@@ -41,3 +43,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+module.exports = app;

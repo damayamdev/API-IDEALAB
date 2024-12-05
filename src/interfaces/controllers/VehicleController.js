@@ -1,14 +1,14 @@
-const Vehicle = require('../../domain/entities/Vehicle');
+const VehicleService = require('../../application/services/VehicleService');
 const vehicleSchema = require('../../application/validators/vehicleValidator');
 
 class VehicleController {
   constructor(vehicleRepository) {
-    this.vehicleRepository = vehicleRepository;
+    this.vehicleService = new VehicleService(vehicleRepository);
   }
 
   async getAllVehicles(req, res) {
     try {
-      const vehicles = await this.vehicleRepository.findAll();
+      const vehicles = await this.vehicleService.getAllVehicles();
       res.json(vehicles);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -17,12 +17,12 @@ class VehicleController {
 
   async getVehicleById(req, res) {
     try {
-      const vehicle = await this.vehicleRepository.findById(req.params.id);
-      if (!vehicle) {
-        return res.status(404).json({ error: 'Vehicle not found' });
-      }
+      const vehicle = await this.vehicleService.getVehicleById(req.params.id);
       res.json(vehicle);
     } catch (error) {
+      if (error.message === 'Vehicle not found') {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: error.message });
     }
   }
@@ -34,15 +34,7 @@ class VehicleController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const vehicle = new Vehicle(
-        null,
-        req.body.vehicleType,
-        req.body.loadCapacity,
-        req.body.licensePlate,
-        req.body.operatingCompany
-      );
-
-      const id = await this.vehicleRepository.create(vehicle);
+      const id = await this.vehicleService.createVehicle(req.body);
       res.status(201).json({ id, ...req.body });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -56,32 +48,24 @@ class VehicleController {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const vehicle = new Vehicle(
-        req.params.id,
-        req.body.vehicleType,
-        req.body.loadCapacity,
-        req.body.licensePlate,
-        req.body.operatingCompany
-      );
-
-      const success = await this.vehicleRepository.update(req.params.id, vehicle);
-      if (!success) {
-        return res.status(404).json({ error: 'Vehicle not found' });
-      }
+      const vehicle = await this.vehicleService.updateVehicle(req.params.id, req.body);
       res.json(vehicle);
     } catch (error) {
+      if (error.message === 'Vehicle not found') {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: error.message });
     }
   }
 
   async deleteVehicle(req, res) {
     try {
-      const success = await this.vehicleRepository.delete(req.params.id);
-      if (!success) {
-        return res.status(404).json({ error: 'Vehicle not found' });
-      }
+      await this.vehicleService.deleteVehicle(req.params.id);
       res.status(204).send();
     } catch (error) {
+      if (error.message === 'Vehicle not found') {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: error.message });
     }
   }
