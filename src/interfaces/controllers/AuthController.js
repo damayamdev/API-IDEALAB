@@ -1,28 +1,25 @@
-const AuthService = require('../../application/services/AuthService');
+const ResponseHandler = require('../../shared/response/ResponseHandler');
 const { registerSchema, loginSchema } = require('../../application/validators/userValidator');
 
 class AuthController {
-  constructor(userRepository) {
-    this.authService = new AuthService(userRepository);
+  constructor({ authService }) {
+    this.authService = authService;
   }
 
   async register(req, res) {
     try {
       const { error } = registerSchema.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return ResponseHandler.badRequest(res, 'Validation error', error.details);
       }
 
       const userId = await this.authService.register(req.body);
-      res.status(201).json({ 
-        message: 'User registered successfully',
-        userId 
-      });
+      return ResponseHandler.created(res, { userId }, 'User registered successfully');
     } catch (error) {
       if (error.message === 'Username or email already exists') {
-        return res.status(409).json({ error: error.message });
+        return ResponseHandler.badRequest(res, error.message);
       }
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 
@@ -30,18 +27,17 @@ class AuthController {
     try {
       const { error } = loginSchema.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return ResponseHandler.badRequest(res, 'Validation error', error.details);
       }
 
       const { identifier, password } = req.body;
       const result = await this.authService.login(identifier, password);
-      
-      res.json(result);
+      return ResponseHandler.success(res, result, 'Login successful');
     } catch (error) {
       if (error.message === 'Invalid credentials') {
-        return res.status(401).json({ error: error.message });
+        return ResponseHandler.unauthorized(res, error.message);
       }
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 }

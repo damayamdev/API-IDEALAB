@@ -1,60 +1,60 @@
 {
-    "swagger": "2.0",
-    "info": {
-      "version": "1.0.0",
-      "title": "Cargo Vehicles API",
-      "description": "API for managing cargo vehicles"
-    },
-    "paths": {
-      "/api/vehicles": {
-        "get": {
-          "tags": ["Vehicles"],
-          "summary": "Get all vehicles",
-          "responses": {
-            "200": {
-              "description": "List of vehicles"
-            }
-          }
-        },
-        "post": {
-          "tags": ["Vehicles"],
-          "summary": "Create a new vehicle",
-          "parameters": [
-            {
-              "name": "vehicle",
-              "in": "body",
-              "description": "Vehicle object",
-              "required": true,
-              "schema": {
-                "$ref": "#/definitions/Vehicle"
-              }
-            }
-          ],
-          "responses": {
-            "201": {
-              "description": "Vehicle created"
-            }
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Cargo Vehicles API",
+    "description": "API for managing cargo vehicles"
+  },
+  "paths": {
+    "/api/vehicles": {
+      "get": {
+        "tags": ["Vehicles"],
+        "summary": "Get all vehicles",
+        "responses": {
+          "200": {
+            "description": "List of vehicles"
           }
         }
-      }
-    },
-    "definitions": {
-      "Vehicle": {
-        "type": "object",
-        "properties": {
-          "vehicleType": {
-            "type": "string"
-          },
-          "loadCapacity": {
-            "type": "number"
-          },
-          "licensePlate": {
-            "type": "string"
-          },
-          "operatingCompany": {
-            "type": "string"
+      },
+      "post": {
+        "tags": ["Vehicles"],
+        "summary": "Create a new vehicle",
+        "parameters": [
+          {
+            "name": "vehicle",
+            "in": "body",
+            "description": "Vehicle object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Vehicle"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Vehicle created"
           }
         }
       }
     }
+  },
+  "definitions": {
+    "Vehicle": {
+      "type": "object",
+      "properties": {
+        "vehicleType": {
+          "type": "string"
+        },
+        "loadCapacity": {
+          "type": "number"
+        },
+        "licensePlate": {
+          "type": "string"
+        },
+        "operatingCompany": {
+          "type": "string"
+        }
+      }
+    }
   }
+}

@@ -1,29 +1,29 @@
-const VehicleService = require('../../application/services/VehicleService');
+const ResponseHandler = require('../../shared/response/ResponseHandler');
 const vehicleSchema = require('../../application/validators/vehicleValidator');
 
 class VehicleController {
-  constructor(vehicleRepository) {
-    this.vehicleService = new VehicleService(vehicleRepository);
+  constructor({ vehicleService }) {
+    this.vehicleService = vehicleService;
   }
 
   async getAllVehicles(req, res) {
     try {
       const vehicles = await this.vehicleService.getAllVehicles();
-      res.json(vehicles);
+      return ResponseHandler.success(res, vehicles);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 
   async getVehicleById(req, res) {
     try {
       const vehicle = await this.vehicleService.getVehicleById(req.params.id);
-      res.json(vehicle);
+      return ResponseHandler.success(res, vehicle);
     } catch (error) {
       if (error.message === 'Vehicle not found') {
-        return res.status(404).json({ error: error.message });
+        return ResponseHandler.notFound(res, error.message);
       }
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 
@@ -31,13 +31,13 @@ class VehicleController {
     try {
       const { error } = vehicleSchema.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return ResponseHandler.badRequest(res, 'Validation error', error.details);
       }
 
       const id = await this.vehicleService.createVehicle(req.body);
-      res.status(201).json({ id, ...req.body });
+      return ResponseHandler.created(res, { id, ...req.body });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 
@@ -45,28 +45,28 @@ class VehicleController {
     try {
       const { error } = vehicleSchema.validate(req.body);
       if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+        return ResponseHandler.badRequest(res, 'Validation error', error.details);
       }
 
       const vehicle = await this.vehicleService.updateVehicle(req.params.id, req.body);
-      res.json(vehicle);
+      return ResponseHandler.success(res, vehicle);
     } catch (error) {
       if (error.message === 'Vehicle not found') {
-        return res.status(404).json({ error: error.message });
+        return ResponseHandler.notFound(res, error.message);
       }
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 
   async deleteVehicle(req, res) {
     try {
       await this.vehicleService.deleteVehicle(req.params.id);
-      res.status(204).send();
+      return ResponseHandler.success(res, null, 'Vehicle deleted successfully');
     } catch (error) {
       if (error.message === 'Vehicle not found') {
-        return res.status(404).json({ error: error.message });
+        return ResponseHandler.notFound(res, error.message);
       }
-      res.status(500).json({ error: error.message });
+      return ResponseHandler.error(res, error.message);
     }
   }
 }

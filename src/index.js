@@ -4,8 +4,9 @@ const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 const vehicleRoutes = require('./interfaces/routes/vehicleRoutes');
 const authRoutes = require('./interfaces/routes/authRoutes');
-const { initDatabase } = require('./infrastructure/database/mysql');
+const { initDatabase } = require('./infrastructure/database/sequelize');
 const logger = require('./config/logger');
+const ResponseHandler = require('./shared/response/ResponseHandler');
 require('dotenv').config();
 
 const app = express();
@@ -25,7 +26,7 @@ app.use('/api/vehicles', vehicleRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   logger.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  return ResponseHandler.error(res);
 });
 
 const PORT = process.env.PORT || 3000;

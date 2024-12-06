@@ -1,52 +1,68 @@
 const IVehicleRepository = require('../../domain/repositories/IVehicleRepository');
 const Vehicle = require('../../domain/entities/Vehicle');
-const { pool } = require('../database/mysql');
+const VehicleModel = require('../database/models/vehicle.model');
 
 class MySQLVehicleRepository extends IVehicleRepository {
   async findAll() {
-    const [rows] = await pool.query('SELECT * FROM vehicles');
-    return rows.map(row => new Vehicle(
-      row.vehicle_id,
-      row.vehicle_type,
-      row.load_capacity,
-      row.license_plate,
-      row.operating_company
+    const vehicles = await VehicleModel.findAll({
+      include: ['creator']
+    });
+    
+    return vehicles.map(vehicle => new Vehicle(
+      vehicle.id,
+      vehicle.vehicleType,
+      vehicle.loadCapacity,
+      vehicle.licensePlate,
+      vehicle.operatingCompany
     ));
   }
 
   async findById(id) {
-    const [rows] = await pool.query('SELECT * FROM vehicles WHERE vehicle_id = ?', [id]);
-    if (rows.length === 0) return null;
+    const vehicle = await VehicleModel.findByPk(id, {
+      include: ['creator']
+    });
     
-    const row = rows[0];
+    if (!vehicle) return null;
+    
     return new Vehicle(
-      row.vehicle_id,
-      row.vehicle_type,
-      row.load_capacity,
-      row.license_plate,
-      row.operating_company
+      vehicle.id,
+      vehicle.vehicleType,
+      vehicle.loadCapacity,
+      vehicle.licensePlate,
+      vehicle.operatingCompany
     );
   }
 
   async create(vehicle) {
-    const [result] = await pool.query(
-      'INSERT INTO vehicles (vehicle_type, load_capacity, license_plate, operating_company) VALUES (?, ?, ?, ?)',
-      [vehicle.vehicleType, vehicle.loadCapacity, vehicle.licensePlate, vehicle.operatingCompany]
-    );
-    return result.insertId;
+    const newVehicle = await VehicleModel.create({
+      vehicleType: vehicle.vehicleType,
+      loadCapacity: vehicle.loadCapacity,
+      licensePlate: vehicle.licensePlate,
+      operatingCompany: vehicle.operatingCompany
+    });
+    
+    return newVehicle.id;
   }
 
   async update(id, vehicle) {
-    const [result] = await pool.query(
-      'UPDATE vehicles SET vehicle_type = ?, load_capacity = ?, license_plate = ?, operating_company = ? WHERE vehicle_id = ?',
-      [vehicle.vehicleType, vehicle.loadCapacity, vehicle.licensePlate, vehicle.operatingCompany, id]
-    );
-    return result.affectedRows > 0;
+    const [updatedRows] = await VehicleModel.update({
+      vehicleType: vehicle.vehicleType,
+      loadCapacity: vehicle.loadCapacity,
+      licensePlate: vehicle.licensePlate,
+      operatingCompany: vehicle.operatingCompany
+    }, {
+      where: { id }
+    });
+    
+    return updatedRows > 0;
   }
 
   async delete(id) {
-    const [result] = await pool.query('DELETE FROM vehicles WHERE vehicle_id = ?', [id]);
-    return result.affectedRows > 0;
+    const deletedRows = await VehicleModel.destroy({
+      where: { id }
+    });
+    
+    return deletedRows > 0;
   }
 }
 

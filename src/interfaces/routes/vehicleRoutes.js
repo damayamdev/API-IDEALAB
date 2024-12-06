@@ -1,13 +1,11 @@
 const express = require('express');
-const VehicleController = require('../controllers/VehicleController');
-const MySQLVehicleRepository = require('../../infrastructure/repositories/MySQLVehicleRepository');
+const container = require('../../shared/container');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
-const vehicleRepository = new MySQLVehicleRepository();
-const vehicleController = new VehicleController(vehicleRepository);
+const vehicleController = container.resolve('vehicleController');
 
-//router.use(authMiddleware);
+router.use(authMiddleware);
 
 router.get('/', (req, res) => vehicleController.getAllVehicles(req, res));
 router.get('/:id', (req, res) => vehicleController.getVehicleById(req, res));

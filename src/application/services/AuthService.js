@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../../domain/entities/User');
 
 class AuthService {
-  constructor(userRepository) {
+  constructor({ userRepository }) {
     this.userRepository = userRepository;
   }
 
